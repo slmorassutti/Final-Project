@@ -1,0 +1,139 @@
+#
+# This file is the first step in my final project
+# It is intended for me to familiorize myself with how to construct a heatmap
+# Created by Sam Morassutti
+#
+#
+#
+# libraries needed
+library(devtools)
+install_github("jokergoo/ComplexHeatmap")
+library(circlize)
+library(cluster)
+
+# index 
+
+
+
+#----------------------------------------------
+#----- 1 Generate a random matrix---------------
+#----------------------------------------------
+# this random matrix will have three groups by columns
+# and three groups by rows
+
+# use the fucntion set.seed to generate random numbers
+?set.seed
+
+set.seed(123)
+nr1 = 4; nr2 = 8; nr3 = 6; nr = nr1 + nr2 + nr3
+nc1 = 6; nc2 = 8; nc3 = 10; nc = nc1 + nc2 + nc3 
+
+# now let's combine all of the rows and columns in a matrix 
+# let's call the matrix object mat!
+mat = cbind(rbind(matrix(rnorm(nr1 * nc1, mean = 1, sd = 0.5), nr = nr1),
+                  matrix(rnorm(nr2 * nc1, mean = 0, sd = 0.5), nr = nr2),
+                  matrix(rnorm(nr3 * nc1, mean = 0, sd = 0.5), nr = nr3)),
+            rbind(matrix(rnorm(nr1 * nc2, mean = 0, sd = 0.5), nr = nr1),
+                  matrix(rnorm(nr2 * nc2, mean = 1, sd = 0.5), nr = nr2),
+                  matrix(rnorm(nr3 * nc2, mean = 0, sd = 0.5), nr = nr3)),
+            rbind(matrix(rnorm(nr1 * nc3, mean = 0.5, sd = 0.5), nr = nr1),
+                  matrix(rnorm(nr2 * nc3, mean = 0.5, sd = 0.5), nr = nr2),
+                  matrix(rnorm(nr3 * nc3, mean = 1, sd = 0.5), nr = nr3)))
+# Now let's shuffle the rows and columns randomly 
+mat = mat[sample(nr, nr), sample(nc, nc)] 
+rownames(mat) = paste0("row", seq_len(nr))
+colnames(mat) = paste0("column", seq_len(nc))
+str(mat)
+# Great! Now we have a random data matrix called mat
+# that has 24 columns and 18 rows
+mat
+# woah those are some interesting numbers
+# let's check the range by using the min and max function
+min(mat) # -1.154584
+max(mat) # 2.62052
+# Now let's visualize this random data and create a heatmap with default settings
+heatmap(mat)
+# 
+?heatmap
+
+ht = heatmap(mat)
+str(ht)
+
+
+#---------- colours----------
+# colours are a veyr important compoent of representation of data in the matrix
+# colour mapping functions
+#allow you to create a fucntion in which a vector of values will result
+# in the correspond colours
+
+# If using heatmap(), always use the circlcolorRam2() in order to make a color
+# mapping function
+# there are two arguements in the colorRamp2
+# a vector of break values and their corresponding colors 
+
+
+# create a color scheme that corresponds to the set values with a rang of -2 to 2
+# in this map, the colors aren't affected by outliers
+# the color mapping function is robost to outliers
+
+col_fun = colorRamp2(c(-2, 0, 2), c("mediumvioletred", "white", "mediumspringgreen"))
+col.fun <- col_fun(seq(-3, 3))
+heatmap(mat,  col = col.fun)
+# the negative values are mediumvioletred and the positive are mediumspringgreen
+# IDK why my legend doesn't show???
+# i have all the libraries......
+# let's save this and send to the correct folder 
+
+# can also create a rainbow color scheme 
+# still no legend....
+heatmap(mat, name = "mat", col = rev(rainbow(10)))
+
+
+# if matrix is continuous, provide a vector of colours 
+# the colours will be interpolated linearly
+# however, mapping isn't robust against outliers
+# becasue it starts with the min and max values
+# in the matrix
+
+# therefore, if you set the colour to the max/min
+# of the matrix, it will be identical to the
+# default plot
+
+
+# can also have colours for a discrete numeric matrix
+# and also for character matrix
+# default clustering will be applied in the dsicrete plot
+# and can be in character plots too if set 
+
+
+
+# -----NA---------------
+# NA is able to be in matrix
+# but you can set the colour so it is identifiable
+# the default colour is grey (how do I put this in legend)
+# to change the colour use argument
+# na_col
+
+
+# let's try
+heatmap(mat,  col = col.fun, na_col = "black")
+# mmmm didn't work
+# maybe because there aren't any NA values...
+
+
+
+# mmmm weird
+f1 = colorRamp2(seq(min(mat), max(mat), length = 3), c("blue", "#EEEEEE", "red"))
+f2 = colorRamp2(seq(min(mat), max(mat), length = 3), c("blue", "#EEEEEE", "red"), 
+                space = "RGB")
+?heatmap
+heatmap(mat, name = "mat1", col = f1, column_title = "LAB color space")
+Heatmap(mat, name = "mat2", col = f2, column_title = "RGB color space")
+
+#move on
+
+# add titles
+heatmap(mat, name = "mat", col = col.fun, main = "EW")
+
+#----clustering???-------
+
